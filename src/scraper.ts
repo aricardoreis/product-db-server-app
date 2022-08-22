@@ -44,15 +44,15 @@ export class Scraper {
   load = async () => {
     await this.initPage(this.baseUrl);
 
-    const store = await this.loadStoreInfo();
-    const sale = await this.loadSaleInfo(store.id);
-    const products = await this.loadProductInfo(sale.date, sale.id);
+    // const store = await this.loadStoreInfo();
+    // const sale = await this.loadSaleInfo(store.id);
+    const products = await this.loadProductInfo("", "" /*sale.date, sale.id*/);
 
     this.close();
 
     return {
-      store,
-      sale,
+      // store,
+      // sale,
       products,
     };
   };
@@ -112,47 +112,42 @@ export class Scraper {
       .join("");
   };
 
-  private code(sel: string, saleId: string, date: string) {
-    const products: Product[] = [];
-
-    const rows = Array.from(document.querySelectorAll(sel));
-    rows.forEach((item) => {
-      const unitType = item.querySelector(".RUN").textContent.split(" ")[1];
-      products.push({
-        name: item.querySelector(".txtTit").textContent,
-        value: parseFloat(
-          item
-            .querySelector(".RvlUnit")
-            .textContent.trim()
-            .split(" ")[2]
-            .replace(",", ".")
-        ),
-        code: parseInt(
-          item
-            .querySelector(".RCod")
-            .textContent.split(" ")[1]
-            .replace(")", "")
-            .trim()
-        ),
-        type:
-          unitType === "Un"
-            ? ItemType.Unit
-            : unitType === "PC"
-            ? ItemType.Piece
-            : ItemType.Kilo,
-        date,
-        saleId,
-      });
-    });
-
-    return products;
-  }
-
   private async loadProductInfo(date, saleId) {
-    return await this.page.evaluate(
-      (sel: string) => this.code(sel, saleId, date),
-      "#tabResult tr"
-    );
+    return await this.page.evaluate((sel: string) => {
+      const products: Product[] = [];
+
+      const rows = Array.from(document.querySelectorAll(sel));
+      rows.forEach((item) => {
+        const unitType = item.querySelector(".RUN").textContent.split(" ")[1];
+        products.push({
+          name: item.querySelector(".txtTit").textContent,
+          value: parseFloat(
+            item
+              .querySelector(".RvlUnit")
+              .textContent.trim()
+              .split(" ")[2]
+              .replace(",", ".")
+          ),
+          code: parseInt(
+            item
+              .querySelector(".RCod")
+              .textContent.split(" ")[1]
+              .replace(")", "")
+              .trim()
+          ),
+          type:
+            unitType === "Un"
+              ? ItemType.Unit
+              : unitType === "PC"
+              ? ItemType.Piece
+              : ItemType.Kilo,
+          date,
+          saleId,
+        });
+      });
+
+      return products;
+    }, "#tabResult tr");
   }
 
   public close = async () => {
