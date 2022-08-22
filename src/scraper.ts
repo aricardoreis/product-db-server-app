@@ -1,5 +1,5 @@
 import * as puppeteer from "puppeteer";
-import { Product } from "./models";
+import { ItemType, Product, Sale, Store } from "./models";
 
 export class Scraper {
   private static instance: Scraper;
@@ -28,7 +28,7 @@ export class Scraper {
         height: 768 + Math.floor(Math.random() * 100),
       },
       args: [
-        "--allow-file-access-from-files",
+        // "--allow-file-access-from-files",
         "--no-sandbox",
         "--disable-setuid-sandbox",
       ],
@@ -44,9 +44,21 @@ export class Scraper {
   load = async () => {
     await this.initPage(this.baseUrl);
 
-    const products = await this.page.evaluate((sel: string) => {
-      const products = [];
+    const store = await this.loadStoreInfo();
+    const sale = await this.loadSaleInfo(store.id);
+    const products = await this.loadProductInfo(sale.date, sale.id);
 
+    this.close();
+
+    return {
+      store,
+      sale,
+      products,
+    };
+  };
+
+  loadSaleInfo = async (storeId) => {
+    return await this.page.evaluate((sel: string) => {
       const datePart = document.querySelector(
         "#infos > div:nth-child(1) > div > ul > li"
       ).textContent;
@@ -54,39 +66,94 @@ export class Scraper {
         .match(/(\d{4}([.\-/ ])\d{2}\2\d{2}|\d{2}([.\-/ ])\d{2}\3\d{4})/)[0]
         .split("/")
         .map((i) => parseInt(i));
-      const date = dateTokens.join("/");
+      const date = `${dateTokens[2]}-${dateTokens[1]}-${dateTokens[0]}`;
 
-      const rows = Array.from(document.querySelectorAll(sel));
-      rows.forEach((item) => {
-        const unitType = item.querySelector(".RUN").textContent.split(" ")[1];
-        products.push({
-          name: item.querySelector(".txtTit").textContent,
-          value: parseFloat(
-            item
-              .querySelector(".RvlUnit")
-              .textContent.trim()
-              .split(" ")[2]
-              .replace(",", ".")
-          ),
-          code: parseInt(
-            item
-              .querySelector(".RCod")
-              .textContent.split(" ")[1]
-              .replace(")", "")
-              .trim()
-          ),
-          type: unitType,
-          date,
-        });
-      });
-
-      return products;
-    }, "#tabResult tr");
-
-    this.close();
-
-    return products as Product[];
+      const topContent = document.querySelector(sel);
+      const store: Sale = {
+        storeId: storeId,
+        id: this.getStoreId(topContent.querySelectorAll("text")[0].textContent),
+        date: date,
+        total: parseFloat(
+          document
+            .querySelector("#linhaTotal > .txtMax")
+            .textContent.replace(",", ".")
+        ),
+      };
+      return store;
+    }, "#conteudo > div.txtCenter");
   };
+
+  loadStoreInfo = async () => {
+    return await this.page.evaluate((sel: string) => {
+      const topContent = document.querySelector(sel);
+      const store: Store = {
+        id: this.getStoreId(topContent.querySelectorAll("text")[0].textContent),
+        storeName: topContent.querySelector("txtTopo").textContent,
+        storeAddress: this.getAddress(
+          topContent.querySelectorAll("text")[1].textContent
+        ),
+      };
+      return store;
+    }, "#conteudo > div.txtCenter");
+  };
+
+  private getStoreId = (value: string) => {
+    return value.split("\n\t").map((i) => i.trim())[2];
+  };
+
+  private getAddress = (value: string) => {
+    return value
+      .split("\n\t")
+      .map((i) => {
+        let item = i.trim();
+        if (item === ",") item += " ";
+        return item;
+      })
+      .join("");
+  };
+
+  private code(sel: string, saleId: string, date: string) {
+    const products: Product[] = [];
+
+    const rows = Array.from(document.querySelectorAll(sel));
+    rows.forEach((item) => {
+      const unitType = item.querySelector(".RUN").textContent.split(" ")[1];
+      products.push({
+        name: item.querySelector(".txtTit").textContent,
+        value: parseFloat(
+          item
+            .querySelector(".RvlUnit")
+            .textContent.trim()
+            .split(" ")[2]
+            .replace(",", ".")
+        ),
+        code: parseInt(
+          item
+            .querySelector(".RCod")
+            .textContent.split(" ")[1]
+            .replace(")", "")
+            .trim()
+        ),
+        type:
+          unitType === "Un"
+            ? ItemType.Unit
+            : unitType === "PC"
+            ? ItemType.Piece
+            : ItemType.Kilo,
+        date,
+        saleId,
+      });
+    });
+
+    return products;
+  }
+
+  private async loadProductInfo(date, saleId) {
+    return await this.page.evaluate(
+      (sel: string) => this.code(sel, saleId, date),
+      "#tabResult tr"
+    );
+  }
 
   public close = async () => {
     await this.page.close();
