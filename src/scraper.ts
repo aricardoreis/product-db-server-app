@@ -135,12 +135,12 @@ export class Scraper {
               .replace(")", "")
               .trim()
           ),
-          type: unitType,
-          //  === "Un"
-          //   ? ItemType.Unit
-          //   : unitType === "PC"
-          //   ? ItemType.Piece
-          //   : ItemType.Kilo,
+          type:
+            unitType === "Un"
+              ? ItemType.Unit
+              : unitType === "PC"
+              ? ItemType.Piece
+              : ItemType.Kilo,
         });
       });
 
