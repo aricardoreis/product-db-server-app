@@ -1,7 +1,7 @@
 export interface Product {
   name: string;
   value: number;
-  type: ItemType;
+  type: string;
   code: number;
   date: string;
   saleId: string;

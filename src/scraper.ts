@@ -114,7 +114,7 @@ export class Scraper {
 
   private async loadProductInfo(date, saleId) {
     return await this.page.evaluate((sel: string) => {
-      const products = [];
+      const products: Product[] = [];
 
       const rows = Array.from(document.querySelectorAll(sel));
       rows.forEach((item) => {
@@ -135,12 +135,9 @@ export class Scraper {
               .replace(")", "")
               .trim()
           ),
-          type:
-            unitType === "Un"
-              ? ItemType.Unit
-              : unitType === "PC"
-              ? ItemType.Piece
-              : ItemType.Kilo,
+          type: unitType,
+          date,
+          saleId,
         });
       });
 
