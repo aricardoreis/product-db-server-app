@@ -44,21 +44,21 @@ export class Scraper {
   load = async () => {
     await this.initPage(this.baseUrl);
 
-    // const store = await this.loadStoreInfo();
-    // const sale = await this.loadSaleInfo(store.id);
-    const products = await this.loadProductInfo("", "" /*sale.date, sale.id*/);
+    const store = await this.loadStoreInfo();
+    const sale = await this.loadSaleInfo(store.id);
+    const products = await this.loadProductInfo(sale.date, sale.id);
 
     this.close();
 
     return {
-      // store,
-      // sale,
+      store,
+      sale,
       products,
     };
   };
 
-  loadSaleInfo = async (storeId) => {
-    return await this.page.evaluate((sel: string) => {
+  loadSaleInfo = async (storeId: string) => {
+    return await this.page.evaluate((storeId: string) => {
       const datePart = document.querySelector(
         "#infos > div:nth-child(1) > div > ul > li"
       ).textContent;
@@ -66,55 +66,51 @@ export class Scraper {
         .match(/(\d{4}([.\-/ ])\d{2}\2\d{2}|\d{2}([.\-/ ])\d{2}\3\d{4})/)[0]
         .split("/")
         .map((i) => parseInt(i));
-      const date = `${dateTokens[2]}-${dateTokens[1]}-${dateTokens[0]}`;
+      const date = `${dateTokens[2]}-${("0" + dateTokens[1]).slice(-2)}-${
+        dateTokens[0]
+      }`;
 
-      const topContent = document.querySelector(sel);
-      const store: Sale = {
-        storeId: storeId,
-        id: this.getStoreId(topContent.querySelectorAll("text")[0].textContent),
+      const sale = {
+        id: document
+          .querySelector("#infos > div:nth-child(2) > div > ul > li")
+          .textContent.split(":")[2],
         date: date,
         total: parseFloat(
           document
             .querySelector("#linhaTotal > .txtMax")
             .textContent.replace(",", ".")
         ),
+        storeId,
       };
-      return store;
-    }, "#conteudo > div.txtCenter");
+      return sale;
+    }, storeId);
   };
 
   loadStoreInfo = async () => {
+    console.debug(">>>>>>>>>");
     return await this.page.evaluate((sel: string) => {
       const topContent = document.querySelector(sel);
-      const store: Store = {
-        id: this.getStoreId(topContent.querySelectorAll("text")[0].textContent),
-        storeName: topContent.querySelector("txtTopo").textContent,
-        storeAddress: this.getAddress(
-          topContent.querySelectorAll("text")[1].textContent
-        ),
+      const values = topContent.querySelectorAll(".text");
+      console.debug(`values: ${values}`);
+      const store = {
+        id: values[0].textContent.split("\n\t").map((i) => i.trim())[2],
+        storeName: topContent.querySelector(".txtTopo").textContent,
+        storeAddress: values[1].textContent
+          .split("\n\t")
+          .map((i) => {
+            let item = i.trim();
+            if (item === ",") item += " ";
+            return item;
+          })
+          .join(""),
       };
       return store;
-    }, "#conteudo > div.txtCenter");
-  };
-
-  private getStoreId = (value: string) => {
-    return value.split("\n\t").map((i) => i.trim())[2];
-  };
-
-  private getAddress = (value: string) => {
-    return value
-      .split("\n\t")
-      .map((i) => {
-        let item = i.trim();
-        if (item === ",") item += " ";
-        return item;
-      })
-      .join("");
+    }, "#conteudo > div.txtCenter ");
   };
 
   private async loadProductInfo(date, saleId) {
-    return await this.page.evaluate((sel: string) => {
-      const products: Product[] = [];
+    const products = await this.page.evaluate((sel: string) => {
+      const products = [];
 
       const rows = Array.from(document.querySelectorAll(sel));
       rows.forEach((item) => {
@@ -136,13 +132,13 @@ export class Scraper {
               .trim()
           ),
           type: unitType,
-          date,
-          saleId,
         });
       });
 
       return products;
     }, "#tabResult tr");
+
+    return products.map((item) => ({ ...item, date, saleId }));
   }
 
   public close = async () => {
