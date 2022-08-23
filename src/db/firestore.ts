@@ -1,9 +1,9 @@
-import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
-import { getFirestore, Timestamp, FieldValue } from "firebase-admin/firestore";
+import { initializeApp, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 let dbInstance: FirebaseFirestore.Firestore;
 
-const getInstanceDB = async () => {
+export const getInstanceDB = async () => {
   if (!dbInstance) {
     const serviceAccount = require(process.env.SERVICE_ACCOUNT_KEY);
 

@@ -1,19 +1,36 @@
+import { Timestamp } from "firebase-admin/firestore";
 import * as db from "./firestore";
+import * as saleDB from "./sale-db";
 
-const PRODUCTS_COLLECTION = "products";
+const COLLECTION = "products";
 
 export const getAll = async () => {
-  await db.fetch(PRODUCTS_COLLECTION);
+  await db.fetch(COLLECTION);
 };
 
 export const get = async (key: string) => {
-  await db.fetch(PRODUCTS_COLLECTION, key);
+  await db.fetch(COLLECTION, key);
 };
 
-export const create = async (product: any, key?: string, storeRef?: string) => {
-  await db.insert(PRODUCTS_COLLECTION, product, key);
+export const create = async (product: any, key?: string, saleId?: string) => {
+  const productEntity = {
+    ...product,
+    sale: await getSaleRef(saleId),
+    date: Timestamp.fromMillis(product.date),
+  };
+  await db.insert(COLLECTION, productEntity, key);
 };
 
-export const createMany = async (products: unknown[]) => {
-  await db.insertMany(PRODUCTS_COLLECTION, products);
+export const createMany = async (products: any[], saleId: string) => {
+  const saleRef = await getSaleRef(saleId);
+  products = products.map((item) => ({
+    ...item,
+    sale: saleRef,
+  }));
+  await db.insertMany(COLLECTION, products);
 };
+async function getSaleRef(saleId: string) {
+  const firestoreDB = await db.getInstanceDB();
+  const saleRef = firestoreDB.doc(`${saleDB.COLLECTION}/${saleId}`);
+  return saleRef;
+}

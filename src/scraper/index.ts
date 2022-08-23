@@ -65,21 +65,18 @@ export class Scraper {
         .match(/(\d{4}([.\-/ ])\d{2}\2\d{2}|\d{2}([.\-/ ])\d{2}\3\d{4})/)[0]
         .split("/")
         .map((i) => parseInt(i));
-      const date = `${dateTokens[2]}-${("0" + dateTokens[1]).slice(-2)}-${
-        dateTokens[0]
-      }`;
 
       const sale = {
         id: document
           .querySelector("#infos > div:nth-child(2) > div > ul > li")
           .textContent.split(":")[2],
-        date: date,
         total: parseFloat(
           document
             .querySelector("#linhaTotal > .txtMax")
             .textContent.replace(",", ".")
         ),
         storeId,
+        date: Date.UTC(dateTokens[2], dateTokens[1] - 1, dateTokens[0]),
       };
       return sale;
     }, storeId);
@@ -106,7 +103,7 @@ export class Scraper {
     }, "#conteudo > div.txtCenter");
   };
 
-  private async loadProductInfo(date: string, saleId: string) {
+  private async loadProductInfo(date: number, saleId: string) {
     const products = await this.page.evaluate((sel: string) => {
       const trimAndSlice = (text: string, separator: string) =>
         text.trim().split(separator);
