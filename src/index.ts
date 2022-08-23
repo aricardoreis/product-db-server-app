@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import { Scraper } from "./scraper";
 import dotenv from "dotenv";
 import { productDB, storeDB, saleDB } from "./db";
+import { isValidUrl } from "./utils/validator";
 
 dotenv.config();
 
@@ -15,21 +16,30 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.post("/load", async (req, res: Response) => {
-  const { url } = req.body;
-  if (!url) {
-    res.status(500);
-    res.send("You should provide the invoice url!");
-    return;
+  try {
+    const { url } = req.body;
+    if (!url) {
+      throw "You should provide the invoice url!";
+    }
+
+    if (!isValidUrl(url)) {
+      throw "Invalid URL!";
+    }
+
+    const scraper = Scraper.getInstance(url);
+    const data = await scraper.load();
+
+    await storeDB.create(data.store, data.store.id);
+    await saleDB.create(data.sale, data.store.id, data.sale.id);
+    await productDB.createMany(data.products, data.sale.id);
+
+    res.send(`The invoice with id ${data.sale.id} has been saved.`);
+  } catch (e) {
+    if (e instanceof Error) {
+      res.status(500);
+      res.send(e.message);
+    }
   }
-
-  const scraper = Scraper.getInstance(url);
-  const data = await scraper.load();
-
-  await storeDB.create(data.store, data.store.id);
-  await saleDB.create(data.sale, data.store.id, data.sale.id);
-  await productDB.createMany(data.products, data.sale.id);
-
-  res.send(`The invoice with id ${data.sale.id} has been saved.`);
 });
 
 app.listen(port, () => {
