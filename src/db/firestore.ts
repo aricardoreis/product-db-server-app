@@ -1,14 +1,17 @@
-import { initializeApp, cert } from "firebase-admin/app";
+import { initializeApp } from "firebase-admin/app";
+import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 
 let dbInstance: FirebaseFirestore.Firestore;
 
 export const getInstanceDB = async () => {
   if (!dbInstance) {
-    const serviceAccount = require(process.env.SERVICE_ACCOUNT_KEY);
-
     initializeApp({
-      credential: cert(serviceAccount),
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      }),
     });
 
     dbInstance = getFirestore();
