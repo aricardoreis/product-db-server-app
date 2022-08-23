@@ -29,6 +29,7 @@ export const createMany = async (products: any[], saleId: string) => {
   }));
   await db.insertMany(COLLECTION, products);
 };
+
 async function getSaleRef(saleId: string) {
   const firestoreDB = await db.getInstanceDB();
   const saleRef = firestoreDB.doc(`${saleDB.COLLECTION}/${saleId}`);
