@@ -1,5 +1,4 @@
 import express, { Express, Request, Response } from "express";
-import { fetch, getInstanceDB, insert } from "./db/firestore";
 import { Scraper } from "./scraper";
 import dotenv from "dotenv";
 import { productDB, storeDB, saleDB } from "./db";
