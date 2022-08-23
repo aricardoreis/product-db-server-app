@@ -69,7 +69,7 @@ export class Scraper {
       const sale = {
         id: document
           .querySelector("#infos > div:nth-child(2) > div > ul > li")
-          .textContent.split(":")[2],
+          .textContent.replace(/\D/g, ""),
         total: parseFloat(
           document
             .querySelector("#linhaTotal > .txtMax")
