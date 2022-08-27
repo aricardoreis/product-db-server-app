@@ -66,3 +66,14 @@ export const fetch = async (collectionName: string, key?: string) => {
   if (key) return snapshot.docs.find((item) => item.id === key)?.data();
   else return snapshot.docs.map((doc) => doc.data());
 };
+
+export const deleteAll = async (collectionName: string) => {
+  const db = await getInstanceDB();
+  db.collection(collectionName)
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.docs.forEach((snapshot) => {
+        snapshot.ref.delete();
+      });
+    });
+};

@@ -3,6 +3,7 @@ import { Scraper } from "./scraper";
 import dotenv from "dotenv";
 import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
+import { deleteAll } from "./db/firestore";
 
 dotenv.config();
 
@@ -13,6 +14,13 @@ app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Product DB!");
+});
+
+app.get("/delete-all-resources", async (req: Request, res: Response) => {
+  deleteAll("products");
+  deleteAll("sales");
+  deleteAll("stores");
+  res.send("Done");
 });
 
 app.post("/load", async (req, res: Response) => {
