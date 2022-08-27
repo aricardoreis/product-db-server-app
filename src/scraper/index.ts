@@ -130,7 +130,7 @@ export class Scraper {
             valueTokens[valueTokens.length - 1].replace(",", ".")
           ),
           code: parseInt(codeTokens[1].replace(")", "").trim()),
-          amount: parseInt(codeTokens[1].trim()),
+          amount: parseInt(amountTokens[1].trim()),
           type: unitType,
         });
       });
