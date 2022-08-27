@@ -120,12 +120,17 @@ export class Scraper {
           item.querySelector(".RCod").textContent,
           ":"
         );
+        const amountTokens = trimAndSlice(
+          item.querySelector(".Rqtd").textContent,
+          " "
+        );
         products.push({
           name: item.querySelector(".txtTit").textContent,
           value: parseFloat(
             valueTokens[valueTokens.length - 1].replace(",", ".")
           ),
           code: parseInt(codeTokens[1].replace(")", "").trim()),
+          amount: parseInt(codeTokens[1].trim()),
           type: unitType,
         });
       });
