@@ -44,8 +44,8 @@ export class Scraper {
     await this.initPage(this.baseUrl);
 
     const store = await this.loadStoreInfo();
-    const sale = await this.loadSaleInfo(store.id);
-    const products = await this.loadProductInfo(sale.date, sale.id);
+    const sale = await this.loadSaleInfo();
+    const products = await this.loadProductInfo(sale.date);
 
     this.close();
 
@@ -56,8 +56,8 @@ export class Scraper {
     };
   };
 
-  loadSaleInfo = async (storeId: string) => {
-    return await this.page.evaluate((storeId: string) => {
+  loadSaleInfo = async () => {
+    return await this.page.evaluate((_: string) => {
       const datePart = document.querySelector(
         "#infos > div:nth-child(1) > div > ul > li"
       ).textContent;
@@ -75,11 +75,10 @@ export class Scraper {
             .querySelector("#linhaTotal > .txtMax")
             .textContent.replace(",", ".")
         ),
-        storeId,
         date: Date.UTC(dateTokens[2], dateTokens[1] - 1, dateTokens[0]),
       };
       return sale;
-    }, storeId);
+    }, null);
   };
 
   loadStoreInfo = async () => {
@@ -103,7 +102,7 @@ export class Scraper {
     }, "#conteudo > div.txtCenter");
   };
 
-  private async loadProductInfo(date: number, saleId: string) {
+  private async loadProductInfo(date: number) {
     const products = await this.page.evaluate((sel: string) => {
       const trimAndSlice = (text: string, separator: string) =>
         text.trim().split(separator);
@@ -130,7 +129,9 @@ export class Scraper {
             valueTokens[valueTokens.length - 1].replace(",", ".")
           ),
           code: parseInt(codeTokens[1].replace(")", "").trim()),
-          amount: parseInt(amountTokens[1].trim()),
+          amount: parseFloat(
+            amountTokens[amountTokens.length - 1].replace(",", ".")
+          ),
           type: unitType,
         });
       });
@@ -138,7 +139,7 @@ export class Scraper {
       return products;
     }, "#tabResult tr");
 
-    return products.map((item) => ({ ...item, date, saleId }));
+    return products.map((item) => ({ ...item, date }));
   }
 
   public close = async () => {
