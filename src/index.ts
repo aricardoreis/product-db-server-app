@@ -20,7 +20,13 @@ app.get("/delete-all-resources", async (req: Request, res: Response) => {
   deleteAll("products");
   deleteAll("sales");
   deleteAll("stores");
+
   res.send("Done");
+});
+
+app.get("/products", async (req: Request, res: Response) => {
+  const products = await productDB.getAll();
+  res.send(products);
 });
 
 app.post("/load", async (req, res: Response) => {

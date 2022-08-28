@@ -1,11 +1,13 @@
 import { Timestamp } from "firebase-admin/firestore";
+import { Product } from "../models/models";
 import * as db from "./firestore";
 import * as saleDB from "./sale-db";
 
 const COLLECTION = "products";
 
 export const getAll = async () => {
-  await db.fetch(COLLECTION);
+  const items = await db.fetch(COLLECTION);
+  return items.map((item: any) => Product.fromJson(item));
 };
 
 export const get = async (key: string) => {
