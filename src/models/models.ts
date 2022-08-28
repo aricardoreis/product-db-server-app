@@ -36,3 +36,8 @@ export enum ItemType {
   Piece,
   Kilo,
 }
+
+export interface AppResponse {
+  success: boolean;
+  result: any;
+}

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
+import { AppResponse } from "./models/models";
 
 dotenv.config();
 
@@ -21,12 +22,18 @@ app.get("/delete-all-resources", async (req: Request, res: Response) => {
   deleteAll("sales");
   deleteAll("stores");
 
-  res.send("Done");
+  res.send({
+    success: true,
+    result: "done",
+  } as AppResponse);
 });
 
 app.get("/products", async (req: Request, res: Response) => {
   const products = await productDB.getAll();
-  res.send(products);
+  res.send({
+    success: true,
+    result: products,
+  } as AppResponse);
 });
 
 app.post("/load", async (req, res: Response) => {
@@ -47,11 +54,17 @@ app.post("/load", async (req, res: Response) => {
     await saleDB.create(data.sale, data.store.id, data.sale.id);
     await productDB.createMany(data.products, data.sale.id);
 
-    res.send(`The invoice with id ${data.sale.id} has been saved.`);
+    res.send({
+      success: true,
+      result: `The invoice with id ${data.sale.id} has been saved.`,
+    } as AppResponse);
   } catch (e) {
     if (e instanceof Error) {
       res.status(500);
-      res.send(e.message);
+      res.send({
+        success: false,
+        result: e.message,
+      } as AppResponse);
     }
   }
 });
