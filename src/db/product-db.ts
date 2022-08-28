@@ -11,7 +11,7 @@ export const getAll = async () => {
 };
 
 export const get = async (key: string) => {
-  await db.fetch(COLLECTION, key);
+  return Product.fromJson(await db.fetch(COLLECTION, key));
 };
 
 export const create = async (product: any, key?: string, saleId?: string) => {
