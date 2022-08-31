@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
-import { AppResponse } from "./models/models";
+import { AppResponse, Product } from "./models/models";
 
 dotenv.config();
 
@@ -67,6 +67,14 @@ app.post("/load", async (req, res: Response) => {
       } as AppResponse);
     }
   }
+});
+
+app.get("/product", async (req, res: Response) => {
+  const { code } = req.query;
+
+  const product = await productDB.getByCode(code.toString());
+
+  res.send({ code, product });
 });
 
 app.listen(port, () => {

@@ -121,16 +121,16 @@ export class Scraper {
         );
         const amountTokens = trimAndSlice(
           item.querySelector(".Rqtd").textContent,
-          " "
+          ":"
         );
         products.push({
           name: item.querySelector(".txtTit").textContent,
           value: parseFloat(
-            valueTokens[valueTokens.length - 1].replace(",", ".")
+            valueTokens[valueTokens.length - 1].trim().replace(",", ".")
           ),
-          code: parseInt(codeTokens[1].replace(")", "").trim()),
+          code: codeTokens[1].replace(")", "").trim(),
           amount: parseFloat(
-            amountTokens[amountTokens.length - 1].replace(",", ".")
+            amountTokens[amountTokens.length - 1].trim().replace(",", ".")
           ),
           type: unitType,
         });

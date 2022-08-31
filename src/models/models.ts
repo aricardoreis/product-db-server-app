@@ -2,7 +2,7 @@ export class Product {
   name: string;
   value: number;
   type: string;
-  code: number;
+  code: string;
   date: Date;
   amount: number;
 

@@ -67,6 +67,19 @@ export const fetch = async (collectionName: string, key?: string) => {
   else return snapshot.docs.map((doc) => doc.data());
 };
 
+export const getByAttributeValue = async (
+  collectionName: string,
+  attribute: string,
+  value: any
+) => {
+  const db = await getInstanceDB();
+
+  const collection = db.collection(collectionName);
+  const querySnapshot = await collection.where(attribute, "==", value).get();
+
+  return querySnapshot.docs.length > 0 ? querySnapshot.docs[0].data() : null;
+};
+
 export const deleteAll = async (collectionName: string) => {
   const db = await getInstanceDB();
   db.collection(collectionName)

@@ -14,6 +14,11 @@ export const get = async (key: string) => {
   return Product.fromJson(await db.fetch(COLLECTION, key));
 };
 
+export const getByCode = async (value: string) => {
+  const product = await db.getByAttributeValue(COLLECTION, "code", value);
+  return Product.fromJson(product);
+};
+
 export const create = async (product: any, key?: string, saleId?: string) => {
   const productEntity = {
     ...product,
