@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { DocumentData, getFirestore } from "firebase-admin/firestore";
 
 let dbInstance: FirebaseFirestore.Firestore;
 
@@ -71,13 +71,13 @@ export const getByAttributeValue = async (
   collectionName: string,
   attribute: string,
   value: any
-) => {
+): Promise<DocumentData> => {
   const db = await getInstanceDB();
 
   const collection = db.collection(collectionName);
   const querySnapshot = await collection.where(attribute, "==", value).get();
 
-  return querySnapshot.docs.length > 0 ? querySnapshot.docs[0].data() : null;
+  return querySnapshot.docs.length > 0 ? querySnapshot.docs[0].ref : null;
 };
 
 export const deleteAll = async (collectionName: string) => {

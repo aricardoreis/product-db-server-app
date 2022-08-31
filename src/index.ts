@@ -3,8 +3,9 @@ import { Scraper } from "./scraper";
 import dotenv from "dotenv";
 import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
-import { deleteAll } from "./db/firestore";
+import { deleteAll, getByAttributeValue, getInstanceDB } from "./db/firestore";
 import { AppResponse, Product } from "./models/models";
+import { FieldValue } from "firebase-admin/firestore";
 
 dotenv.config();
 
@@ -52,7 +53,9 @@ app.post("/load", async (req, res: Response) => {
 
     await storeDB.create(data.store, data.store.id);
     await saleDB.create(data.sale, data.store.id, data.sale.id);
-    await productDB.createMany(data.products, data.sale.id);
+    data.products.forEach(
+      async (element) => await productDB.create(element, null, data.sale.id)
+    );
 
     res.send({
       success: true,

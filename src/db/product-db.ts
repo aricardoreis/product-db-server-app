@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase-admin/firestore";
+import { DocumentData, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { Product } from "../models/models";
 import * as db from "./firestore";
 import * as saleDB from "./sale-db";
@@ -14,18 +14,40 @@ export const get = async (key: string) => {
   return Product.fromJson(await db.fetch(COLLECTION, key));
 };
 
-export const getByCode = async (value: string) => {
-  const product = await db.getByAttributeValue(COLLECTION, "code", value);
-  return Product.fromJson(product);
+export const getByCode = async (code: string): Promise<DocumentData> => {
+  return await db.getByAttributeValue(COLLECTION, "code", code);
 };
 
 export const create = async (product: any, key?: string, saleId?: string) => {
-  const productEntity = {
-    ...product,
-    sale: await getSaleRef(saleId),
-    date: Timestamp.fromMillis(product.date),
-  };
-  await db.insert(COLLECTION, productEntity, key);
+  const existingProduct = await getByCode(product.code);
+  if (existingProduct) {
+    // update existing one, adding a new price
+    console.log(">>", existingProduct);
+    await existingProduct.update({
+      priceHistory: FieldValue.arrayUnion({
+        date: product.date,
+        value: product.value,
+      }),
+    });
+  } else {
+    // create new product on db
+    const productEntity = {
+      ...product,
+
+      sale: await getSaleRef(saleId),
+      date: Timestamp.fromMillis(product.date),
+      priceHistory: [
+        {
+          date: product.date,
+          value: product.value,
+        },
+      ],
+    };
+
+    delete productEntity.value;
+
+    await db.insert(COLLECTION, productEntity, key);
+  }
 };
 
 export const createMany = async (products: any[], saleId: string) => {

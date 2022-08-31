@@ -1,20 +1,32 @@
 export class Product {
   name: string;
-  value: number;
   type: string;
   code: string;
-  date: Date;
   amount: number;
+  priceHistory: PriceHistory[];
 
   static fromJson = (jsonData: any): Product => {
     return {
       name: jsonData["name"],
-      value: jsonData["value"],
       type: jsonData["type"],
       code: jsonData["code"],
-      date: new Date(jsonData["date"]),
       amount: jsonData["amount"],
+      priceHistory: jsonData.priceHistory.map((item: any) =>
+        PriceHistory.fromJson(item)
+      ),
     } as Product;
+  };
+}
+
+export class PriceHistory {
+  date: Date;
+  value: number;
+
+  static fromJson = (jsonData: any): PriceHistory => {
+    return {
+      date: new Date(jsonData["date"]),
+      value: jsonData["value"],
+    };
   };
 }
 
