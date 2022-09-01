@@ -29,6 +29,7 @@ export const create = async (
   const existingProduct = await getByCode(product.code);
   const firestoreDB = await getInstanceDB();
   const storeRef = firestoreDB.doc(`${storeDB.COLLECTION}/${storeId}`);
+  const saleRef = await getSaleRef(saleId);
   if (existingProduct) {
     // update existing one, adding a new price
     await existingProduct.update({
@@ -36,6 +37,7 @@ export const create = async (
         date: product.date,
         value: product.value,
         store: storeRef,
+        sale: saleRef,
       }),
     });
   } else {
@@ -43,13 +45,13 @@ export const create = async (
     const productEntity = {
       ...product,
 
-      sale: await getSaleRef(saleId),
       date: Timestamp.fromMillis(product.date),
       priceHistory: [
         {
           date: product.date,
           value: product.value,
           store: storeRef,
+          sale: saleRef,
         },
       ],
     };
