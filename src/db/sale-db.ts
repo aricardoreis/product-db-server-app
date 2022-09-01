@@ -14,7 +14,7 @@ export const create = async (sale: any, storeId: string, key?: string) => {
   await db.insert(COLLECTION, saleEntity, key);
 };
 
-export const get = async (key: string) => {
-  const sale = await db.fetch(COLLECTION, key);
+export const get = async (id: string) => {
+  const sale = await db.fetch(COLLECTION, id);
   return sale;
 };
