@@ -1,4 +1,9 @@
-import { DocumentData, FieldValue, Timestamp } from "firebase-admin/firestore";
+import {
+  DocumentData,
+  DocumentReference,
+  FieldValue,
+  Timestamp,
+} from "firebase-admin/firestore";
 import { Product } from "../models/models";
 import { getInstanceDB } from "./firestore";
 import * as db from "./firestore";
@@ -16,8 +21,10 @@ export const get = async (key: string) => {
   return Product.fromJson(await db.fetch(COLLECTION, key));
 };
 
-export const getByCode = async (code: string): Promise<DocumentData> => {
-  return await db.getByAttributeValue(COLLECTION, "code", code);
+export const getRefByCode = async (
+  code: string
+): Promise<DocumentReference<DocumentData>> => {
+  return await db.getRefByAttributeValue(COLLECTION, "code", code);
 };
 
 export const create = async (
@@ -26,11 +33,12 @@ export const create = async (
   saleId?: string,
   storeId?: string
 ) => {
-  const existingProduct = await getByCode(product.code);
+  const existingProduct = await getRefByCode(product.code);
   const firestoreDB = await getInstanceDB();
   const storeRef = firestoreDB.doc(`${storeDB.COLLECTION}/${storeId}`);
   const saleRef = await getSaleRef(saleId);
-  if (existingProduct) {
+  const shouldUpdate = shouldUpdateProduct(existingProduct, product);
+  if (shouldUpdate) {
     // update existing one, adding a new price
     await existingProduct.update({
       priceHistory: FieldValue.arrayUnion({
@@ -46,6 +54,7 @@ export const create = async (
       ...product,
 
       date: Timestamp.fromMillis(product.date),
+      isEAN: hasEANCode(product),
       priceHistory: [
         {
           date: product.date,
@@ -75,4 +84,15 @@ async function getSaleRef(saleId: string) {
   const firestoreDB = await db.getInstanceDB();
   const saleRef = firestoreDB.doc(`${saleDB.COLLECTION}/${saleId}`);
   return saleRef;
+}
+
+function hasEANCode(product: any): boolean {
+  return product.code.length === 13 || product.code.length === 8;
+}
+
+function shouldUpdateProduct(
+  productRef: DocumentReference<DocumentData>,
+  product: any
+): boolean {
+  return productRef && hasEANCode(product);
 }

@@ -75,7 +75,7 @@ app.post("/load", async (req, res: Response) => {
 app.get("/product", async (req, res: Response) => {
   const { code } = req.query;
 
-  const product = await productDB.getByCode(code.toString());
+  const product = await productDB.getRefByCode(code.toString());
 
   res.send({ code, product });
 });

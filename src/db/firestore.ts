@@ -1,6 +1,10 @@
 import { initializeApp } from "firebase-admin/app";
 import admin from "firebase-admin";
-import { DocumentData, getFirestore } from "firebase-admin/firestore";
+import {
+  DocumentData,
+  DocumentReference,
+  getFirestore,
+} from "firebase-admin/firestore";
 
 let dbInstance: FirebaseFirestore.Firestore;
 
@@ -67,17 +71,22 @@ export const fetch = async (collectionName: string, key?: string) => {
   else return snapshot.docs.map((doc) => doc.data());
 };
 
-export const getByAttributeValue = async (
+export const getRefByAttributeValue = async (
   collectionName: string,
   attribute: string,
   value: any
-): Promise<DocumentData> => {
+): Promise<DocumentReference<DocumentData>> => {
   const db = await getInstanceDB();
 
   const collection = db.collection(collectionName);
   const querySnapshot = await collection.where(attribute, "==", value).get();
 
   return querySnapshot.docs.length > 0 ? querySnapshot.docs[0].ref : null;
+};
+
+export const getDataFromRef = async (ref: DocumentReference) => {
+  const snapshot = await ref.get();
+  return snapshot.data();
 };
 
 export const deleteAll = async (collectionName: string) => {
