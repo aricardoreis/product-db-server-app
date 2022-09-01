@@ -1,4 +1,3 @@
-import { Timestamp } from "firebase-admin/firestore";
 import * as db from "./firestore";
 import * as storeDB from "./store-db";
 
@@ -10,11 +9,12 @@ export const create = async (sale: any, storeId: string, key?: string) => {
   const saleEntity = {
     ...sale,
     store: storeRef,
-    date: Timestamp.fromMillis(sale.date),
+    date: sale.date,
   };
   await db.insert(COLLECTION, saleEntity, key);
 };
 
 export const get = async (key: string) => {
-  await db.fetch(COLLECTION, key);
+  const sale = await db.fetch(COLLECTION, key);
+  return sale;
 };

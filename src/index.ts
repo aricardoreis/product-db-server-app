@@ -1,10 +1,10 @@
 import express, { Express, Request, Response } from "express";
-import { Scraper } from "./scraper";
 import dotenv from "dotenv";
+import { Scraper } from "./scraper";
 import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
-import { AppResponse } from "./models/models";
+import { AppResponse, Sale } from "./models";
 
 dotenv.config();
 
@@ -17,23 +17,12 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Product DB!");
 });
 
-app.get("/delete-all-resources", async (req: Request, res: Response) => {
+app.get("/delete-all", async (req: Request, res: Response) => {
   deleteAll("products");
   deleteAll("sales");
   deleteAll("stores");
 
-  res.send({
-    success: true,
-    result: "done",
-  } as AppResponse);
-});
-
-app.get("/products", async (req: Request, res: Response) => {
-  const products = await productDB.getAll();
-  res.send({
-    success: true,
-    result: products,
-  } as AppResponse);
+  res.send(AppResponse.create(true, "done"));
 });
 
 app.post("/load", async (req, res: Response) => {
@@ -72,12 +61,20 @@ app.post("/load", async (req, res: Response) => {
   }
 });
 
-app.get("/product", async (req, res: Response) => {
-  const { code } = req.query;
+app.get("/products", async (req: Request, res: Response) => {
+  const products = await productDB.getAll();
+  res.send(AppResponse.create(true, products));
+});
 
-  const product = await productDB.getRefByCode(code.toString());
+app.get("/sales/:key", async (req, res: Response) => {
+  const { key } = req.params;
 
-  res.send({ code, product });
+  const sale = await saleDB.get(key);
+  if (sale) {
+    res.status(404);
+  }
+
+  res.send(AppResponse.create(true, Sale.fromJson(sale)));
 });
 
 app.listen(port, () => {

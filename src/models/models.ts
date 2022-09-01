@@ -36,11 +36,18 @@ export interface Store {
   storeAddress: string;
 }
 
-export interface Sale {
+export class Sale {
   id: string;
-  storeId: string;
-  date: string;
+  date: Date;
   total: number;
+
+  static fromJson = (jsonData: any): Sale => {
+    return {
+      id: jsonData["id"],
+      date: new Date(jsonData["date"]),
+      total: jsonData["total"],
+    } as Sale;
+  };
 }
 
 export enum ItemType {
@@ -49,7 +56,14 @@ export enum ItemType {
   Kilo,
 }
 
-export interface AppResponse {
+export class AppResponse {
   success: boolean;
   result: any;
+
+  static create = (success: boolean, result: any) => {
+    return {
+      success,
+      result,
+    };
+  };
 }
