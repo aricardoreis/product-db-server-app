@@ -46,6 +46,7 @@ export const create = async (
         value: product.value,
         store: storeRef,
         sale: saleRef,
+        timestamp: Timestamp.fromMillis(new Date().valueOf()),
       }),
     });
   } else {
@@ -61,6 +62,7 @@ export const create = async (
           value: product.value,
           store: storeRef,
           sale: saleRef,
+          timestamp: Timestamp.fromMillis(new Date().valueOf()),
         },
       ],
     };
