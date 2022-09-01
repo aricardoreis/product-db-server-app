@@ -1,7 +1,9 @@
 import { DocumentData, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { Product } from "../models/models";
+import { getInstanceDB } from "./firestore";
 import * as db from "./firestore";
 import * as saleDB from "./sale-db";
+import * as storeDB from "./store-db";
 
 const COLLECTION = "products";
 
@@ -18,15 +20,22 @@ export const getByCode = async (code: string): Promise<DocumentData> => {
   return await db.getByAttributeValue(COLLECTION, "code", code);
 };
 
-export const create = async (product: any, key?: string, saleId?: string) => {
+export const create = async (
+  product: any,
+  key?: string,
+  saleId?: string,
+  storeId?: string
+) => {
   const existingProduct = await getByCode(product.code);
+  const firestoreDB = await getInstanceDB();
+  const storeRef = firestoreDB.doc(`${storeDB.COLLECTION}/${storeId}`);
   if (existingProduct) {
     // update existing one, adding a new price
-    console.log(">>", existingProduct);
     await existingProduct.update({
       priceHistory: FieldValue.arrayUnion({
         date: product.date,
         value: product.value,
+        store: storeRef,
       }),
     });
   } else {
@@ -40,6 +49,7 @@ export const create = async (product: any, key?: string, saleId?: string) => {
         {
           date: product.date,
           value: product.value,
+          store: storeRef,
         },
       ],
     };
