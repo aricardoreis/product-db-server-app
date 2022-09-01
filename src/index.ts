@@ -5,6 +5,7 @@ import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
 import { AppResponse, Sale } from "./models";
+import { ApplicationError } from "./utils/exception";
 
 dotenv.config();
 
@@ -29,15 +30,20 @@ app.post("/load", async (req, res: Response) => {
   try {
     const { url } = req.body;
     if (!url) {
-      throw "You should provide the invoice url!";
+      throw new ApplicationError("You should provide the invoice url!");
     }
 
     if (!isValidUrl(url)) {
-      throw "Invalid URL!";
+      throw new ApplicationError("Invalid URL!");
     }
 
     const scraper = Scraper.getInstance(url);
     const data = await scraper.load();
+
+    const sale = saleDB.get(data.sale.id);
+    if (sale) {
+      throw new ApplicationError(`Sale already exists`);
+    }
 
     await storeDB.create(data.store, data.store.id);
     await saleDB.create(data.sale, data.store.id, data.sale.id);
