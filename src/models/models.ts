@@ -42,6 +42,7 @@ export class Sale {
   total: number;
 
   static fromJson = (jsonData: any): Sale => {
+    if (!jsonData) return null;
     return {
       id: jsonData["id"],
       date: new Date(jsonData["date"]),
