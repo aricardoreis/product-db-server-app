@@ -52,18 +52,25 @@ app.post("/load", async (req, res: Response) => {
         await productDB.create(element, null, data.sale.id, data.store.id)
     );
 
-    res.send({
-      success: true,
-      result: `The invoice with id ${data.sale.id} has been saved.`,
-    } as AppResponse);
+    res.send(
+      AppResponse.create(
+        true,
+        `The invoice with id ${data.sale.id} has been saved.`
+      )
+    );
   } catch (e) {
+    let message: String = "Something went wrong";
+
+    if (e instanceof ApplicationError) {
+      res.status(400);
+      message = e.message;
+    }
+
     if (e instanceof Error) {
       res.status(500);
-      res.send({
-        success: false,
-        result: e.message,
-      } as AppResponse);
     }
+
+    res.send(AppResponse.create(false, message));
   }
 });
 
