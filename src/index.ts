@@ -41,7 +41,7 @@ app.post("/load", async (req, res: Response) => {
     const data = await scraper.load();
 
     const sale = await saleDB.get(data.sale.id);
-    if (sale) {
+    if (!sale) {
       throw new ApplicationError(`Sale already exists`);
     }
 
