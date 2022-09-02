@@ -1,3 +1,4 @@
+import { Sale } from "../models";
 import * as db from "./firestore";
 import * as storeDB from "./store-db";
 
@@ -16,5 +17,5 @@ export const create = async (sale: any, storeId: string, key?: string) => {
 
 export const get = async (id: string) => {
   const sale = await db.fetch(COLLECTION, id);
-  return sale;
+  return Sale.fromJson(sale);
 };
