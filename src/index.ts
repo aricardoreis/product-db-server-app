@@ -59,17 +59,15 @@ app.post("/load", async (req, res: Response) => {
       )
     );
   } catch (e) {
-    let message: String = "Something went wrong";
+    let statusCode = 500;
+    let message = "Something went wrong";
 
     if (e instanceof ApplicationError) {
-      res.status(400);
+      statusCode = 400;
       message = e.message;
     }
 
-    if (e instanceof Error) {
-      res.status(500);
-    }
-
+    res.status(statusCode);
     res.send(AppResponse.create(false, message));
   }
 });
