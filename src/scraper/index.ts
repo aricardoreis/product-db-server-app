@@ -7,16 +7,9 @@ export class Scraper {
   private browser: puppeteer.Browser;
   protected page: puppeteer.Page;
 
-  protected constructor(baseUrl: string) {
+  constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
-
-  public static getInstance = (baseUrl: string): Scraper => {
-    if (!Scraper.instance) {
-      Scraper.instance = new Scraper(baseUrl);
-    }
-    return Scraper.instance;
-  };
 
   launchBrowser = async () => {
     this.browser = await puppeteer.launch({
