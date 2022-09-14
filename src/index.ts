@@ -52,12 +52,7 @@ app.post("/load", async (req, res: Response) => {
         await productDB.create(element, null, data.sale.id, data.store.id)
     );
 
-    res.send(
-      AppResponse.create(
-        true,
-        `The invoice with id ${data.sale.id} has been saved.`
-      )
-    );
+    res.redirect("/products");
   } catch (e) {
     let statusCode = 500;
     let message = "Something went wrong";
