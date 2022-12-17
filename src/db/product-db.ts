@@ -20,7 +20,7 @@ export const getAll = async () => {
     return items.map((item: any) => Product.fromJson(item));
   } catch (e) {
     if (e instanceof Error) {
-      console.error("Something went wrong, e");
+      console.error("Something went wrong", e);
     }
   }
 };
