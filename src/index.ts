@@ -9,8 +9,6 @@ import { ApplicationError } from "./utils/exception";
 
 dotenv.config();
 
-console.log("env", JSON.stringify(process.env));
-
 const app: Express = express();
 const port = process.env.PORT || 8000;
 
