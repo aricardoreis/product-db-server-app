@@ -13,8 +13,16 @@ import * as storeDB from "./store-db";
 const COLLECTION = "products";
 
 export const getAll = async () => {
-  const items = await db.fetch(COLLECTION);
-  return items.map((item: any) => Product.fromJson(item));
+  try {
+    const items = await db.fetch(COLLECTION);
+    console.log("items", JSON.stringify(items));
+
+    return items.map((item: any) => Product.fromJson(item));
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Something went wrong, e");
+    }
+  }
 };
 
 export const get = async (key: string) => {
