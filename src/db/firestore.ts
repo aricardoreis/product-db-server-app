@@ -23,12 +23,14 @@ export const getInstanceDB = async () => {
     )
       throw "You need to set the firebase variables!";
 
+    const { privateKey } = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
+
     initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         privateKey:
           process.env.NODE_ENV === "dev"
-            ? process.env.FIREBASE_PRIVATE_KEY
+            ? privateKey
             : JSON.parse(process.env.FIREBASE_PRIVATE_KEY),
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       }),
