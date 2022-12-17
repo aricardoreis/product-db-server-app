@@ -9,13 +9,19 @@ import {
 let dbInstance: FirebaseFirestore.Firestore;
 
 export const getInstanceDB = async () => {
+  console.log(">> getInstanceDB");
   if (!dbInstance) {
     if (
       !process.env.FIREBASE_PROJECT_ID ||
       !process.env.FIREBASE_PRIVATE_KEY ||
-      !process.env.FIREBASE_PRIVATE_KEY
+      !process.env.FIREBASE_CLIENT_EMAIL
     )
       throw "You need to set the firebase variables!";
+
+    console.log(process.env.NODE_ENV);
+    console.log(process.env.FIREBASE_PROJECT_ID);
+    console.log(process.env.FIREBASE_PRIVATE_KEY);
+    console.log(process.env.FIREBASE_CLIENT_EMAIL);
 
     initializeApp({
       credential: admin.credential.cert({
