@@ -59,6 +59,7 @@ app.post("/load", async (req, res: Response) => {
       )
     );
   } catch (e) {
+    console.log(">> ERROR " + e);
     let statusCode = 500;
     let message = "Something went wrong";
 
