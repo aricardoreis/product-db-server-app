@@ -37,7 +37,7 @@ app.post("/load", async (req, res: Response) => {
       throw new ApplicationError("Invalid URL!");
     }
 
-    /*const scraper = new Scraper(url);
+    const scraper = new Scraper(url);
     const data = await scraper.load();
 
     const sale = await saleDB.get(data.sale.id);
@@ -50,9 +50,14 @@ app.post("/load", async (req, res: Response) => {
     data.products.forEach(
       async (element) =>
         await productDB.create(element, null, data.sale.id, data.store.id)
-    );*/
+    );
 
-    res.redirect("/products");
+    res.send(
+      AppResponse.create(
+        true,
+        `Invoice ${sale.id} has been saved with success!`
+      )
+    );
   } catch (e) {
     let statusCode = 500;
     let message = "Something went wrong";
