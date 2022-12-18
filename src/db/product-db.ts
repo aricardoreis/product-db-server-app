@@ -15,7 +15,7 @@ const COLLECTION = "products";
 export const getAll = async () => {
   try {
     const items = await db.fetch(COLLECTION);
-    console.log("items", JSON.stringify(items));
+    console.log("items count", items.length);
 
     return items.map((item: any) => Product.fromJson(item));
   } catch (e) {
