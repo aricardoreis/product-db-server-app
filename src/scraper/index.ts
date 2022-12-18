@@ -19,6 +19,7 @@ export class Scraper {
         width: 1024 + Math.floor(Math.random() * 100),
         height: 768 + Math.floor(Math.random() * 100),
       },
+      ignoreHTTPSErrors: true,
       args: [
         "--allow-file-access-from-files",
         "--no-sandbox",
