@@ -12,7 +12,7 @@ import * as storeDB from "./store-db";
 
 const COLLECTION = "products";
 
-export const getAll = async () => {
+export const getAll = async (): Promise<Product[]> => {
   try {
     const items = await db.fetch(COLLECTION);
     console.log("items count", items.length);

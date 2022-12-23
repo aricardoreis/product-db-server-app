@@ -6,6 +6,7 @@ import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
 import { AppResponse, Sale } from "./models";
 import { ApplicationError } from "./utils/exception";
+import { sortProductsAsc } from "./utils/sorting";
 
 dotenv.config();
 
@@ -77,7 +78,7 @@ app.post("/load", async (req, res: Response) => {
 
 app.get("/products", async (req: Request, res: Response) => {
   const products = await productDB.getAll();
-  res.send(AppResponse.create(true, products));
+  res.send(AppResponse.create(true, products.sort(sortProductsAsc)));
 });
 
 app.get("/sales/:key", async (req, res: Response) => {
