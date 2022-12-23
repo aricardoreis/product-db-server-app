@@ -1,7 +1,8 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { Scraper } from "./scraper";
-import { productDB, storeDB, saleDB } from "./db";
+import { productDB, storeDB } from "./db";
+import * as saleDB from "./db/sale-db";
 import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
 import { AppResponse, Sale } from "./models";
