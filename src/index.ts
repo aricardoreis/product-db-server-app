@@ -56,7 +56,7 @@ app.post("/load", async (req, res: Response) => {
     res.send(
       AppResponse.create(
         true,
-        `Invoice ${sale.id} has been saved with success!`
+        `Invoice ${data.sale.id} has been saved with success!`
       )
     );
   } catch (e) {
