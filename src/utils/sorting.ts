@@ -5,7 +5,7 @@ const sortProductsByName = (p1: Product, p2: Product) => {
 };
 
 const sortSalesByDate = (s1: Sale, s2: Sale) => {
-  return s1.date.getTime() >= s2.date.getTime();
+  return s1.date.getTime() - s2.date.getTime();
 };
 
 export { sortProductsByName as sortProductsAsc, sortSalesByDate };
