@@ -19,3 +19,16 @@ export const get = async (id: string) => {
   const sale = await db.fetch(COLLECTION, id);
   return Sale.fromJson(sale);
 };
+
+export const getAll = async (): Promise<Sale[]> => {
+  try {
+    const items = await db.fetch(COLLECTION);
+    console.log("sales count", items.length);
+
+    return items.map((item: any) => Sale.fromJson(item));
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Something went wrong", e);
+    }
+  }
+};

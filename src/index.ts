@@ -19,7 +19,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Product DB!");
 });
 
-app.get("/delete-all", async (req: Request, res: Response) => {
+app.get("/delete-all", async (_req: Request, res: Response) => {
   deleteAll("products");
   deleteAll("sales");
   deleteAll("stores");
@@ -76,9 +76,14 @@ app.post("/load", async (req, res: Response) => {
   }
 });
 
-app.get("/products", async (req: Request, res: Response) => {
+app.get("/products", async (_req: Request, res: Response) => {
   const products = await productDB.getAll();
   res.send(AppResponse.create(true, products.sort(sortProductsAsc)));
+});
+
+app.get("/sales", async (_req, res: Response) => {
+  const sales = await saleDB.getAll();
+  res.send(AppResponse.create(true, sales));
 });
 
 app.get("/sales/:key", async (req, res: Response) => {
