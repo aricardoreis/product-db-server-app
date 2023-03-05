@@ -30,6 +30,9 @@ app.get("/delete-all", async (_req: Request, res: Response) => {
 app.post("/load", async (req, res: Response) => {
   try {
     const { url } = req.body;
+
+    console.log("Loading invoice from url " + url);
+
     if (!url) {
       throw new ApplicationError("You should provide the invoice url!");
     }
@@ -90,6 +93,8 @@ app.get("/sales/:key", async (req, res: Response) => {
   const { key } = req.params;
 
   const sale = await saleDB.get(key);
+
+  // TODO: load items list and other additional info
   if (sale) {
     res.status(404);
   }
