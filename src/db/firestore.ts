@@ -17,15 +17,10 @@ export const getInstanceDB = async () => {
     )
       throw "You need to set the firebase variables!";
 
-    const { privateKey } = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
-
     initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey:
-          process.env.NODE_ENV === "dev"
-            ? privateKey
-            : JSON.parse(process.env.FIREBASE_PRIVATE_KEY),
+        privateKey: getFirebasePrivateKey(),
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       }),
     });
@@ -33,6 +28,15 @@ export const getInstanceDB = async () => {
     dbInstance = getFirestore();
   }
   return dbInstance;
+};
+
+const getFirebasePrivateKey = () => {
+  try {
+    const { privateKey } = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
+    return privateKey;
+  } catch (error) {
+    return process.env.FIREBASE_PRIVATE_KEY;
+  }
 };
 
 const getDocRef = (
