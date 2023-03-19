@@ -1,3 +1,4 @@
+import { DocumentReference } from "firebase-admin/firestore";
 import { Sale } from "../models";
 import * as db from "./firestore";
 import * as storeDB from "./store-db";
@@ -20,6 +21,13 @@ export const get = async (id: string) => {
 
   const loadedStore = await db.getDataFromRef(sale.store);
   sale.store = loadedStore;
+
+  const products = await Promise.all(
+    sale.products.map(
+      async (prodRef: DocumentReference) => await db.getDataFromRef(prodRef)
+    )
+  );
+  sale.products = products;
 
   return Sale.fromJson(sale);
 };
