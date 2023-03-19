@@ -9,3 +9,12 @@ export const create = async (store: any, key?: string) => {
 export const get = async (key: string) => {
   await db.fetch(COLLECTION, key);
 };
+
+export const getRef = async (id: string) => {
+  return await db.getRefByAttributeValue(COLLECTION, "id", id);
+};
+
+export const remove = async (id: string) => {
+  const ref = await getRef(id);
+  if (ref) ref.delete();
+};
