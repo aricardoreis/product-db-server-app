@@ -29,7 +29,7 @@ export const get = async (id: string) => {
   );
   sale.products = products;
 
-  return Sale.fromJson(sale);
+  return Sale.fromJsonWithDetails(sale);
 };
 
 export const getAll = async (): Promise<Sale[]> => {

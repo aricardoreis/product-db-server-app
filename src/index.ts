@@ -34,16 +34,16 @@ app.get("/delete-all", async (_req: Request, res: Response) => {
 app.get("/fakeLoad", async (req, res) => {
   const data = mockSale;
 
-  await storeDB.create(data.store, data.store.id);
-  await saleDB.create(data.sale, data.store.id, data.sale.id);
-  const productRefs = await Promise.all(
-    data.products.map(
-      async (element) =>
-        await productDB.create(element, null, data.sale.id, data.store.id)
-    )
-  );
+  // await storeDB.create(data.store, data.store.id);
+  // await saleDB.create(data.sale, data.store.id, data.sale.id);
+  // const productRefs = await Promise.all(
+  //   data.products.map(
+  //     async (element) =>
+  //       await productDB.create(element, null, data.sale.id, data.store.id)
+  //   )
+  // );
 
-  await addProductsToSale(data.sale.id, productRefs);
+  // await addProductsToSale(data.sale.id, productRefs);
 
   await removeSale(data.sale.id);
   await removeStore(data.store.id);
@@ -126,12 +126,11 @@ app.get("/sales/:key", async (req, res: Response) => {
 
   const sale = await saleDB.get(key);
 
-  // TODO: load items list and other additional info
   if (sale) {
     res.status(404);
   }
 
-  res.send(AppResponse.create(true, Sale.fromJson(sale)));
+  res.send(AppResponse.create(true, sale));
 });
 
 app.listen(port, () => {
