@@ -19,15 +19,17 @@ export const create = async (sale: any, storeId: string, key?: string) => {
 export const get = async (id: string) => {
   const sale = await db.fetch(COLLECTION, id);
 
-  const loadedStore = await db.getDataFromRef(sale.store);
-  sale.store = loadedStore;
+  if (sale) {
+    const loadedStore = await db.getDataFromRef(sale.store);
+    sale.store = loadedStore;
 
-  const products = await Promise.all(
-    sale.products.map(
-      async (prodRef: DocumentReference) => await db.getDataFromRef(prodRef)
-    )
-  );
-  sale.products = products;
+    const products = await Promise.all(
+      sale.products.map(
+        async (prodRef: DocumentReference) => await db.getDataFromRef(prodRef)
+      )
+    );
+    sale.products = products;
+  }
 
   return Sale.fromJsonWithDetails(sale);
 };
