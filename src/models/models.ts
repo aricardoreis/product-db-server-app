@@ -11,7 +11,7 @@ export class Product {
       type: jsonData["type"],
       code: jsonData["code"],
       amount: jsonData["amount"],
-      priceHistory: jsonData.priceHistory.map((item: any) =>
+      priceHistory: jsonData.priceHistory?.map((item: any) =>
         PriceHistory.fromJson(item)
       ),
     } as Product;
@@ -40,13 +40,28 @@ export class Sale {
   id: string;
   date: Date;
   total: number;
+  store: Store;
+  products: Product[];
 
-  static fromJson = (jsonData: any): Sale => {
+  static fromJson = (jsonData: any) => {
     if (!jsonData) return null;
     return {
       id: jsonData["id"],
       date: new Date(jsonData["date"]),
       total: jsonData["total"],
+    };
+  };
+
+  static fromJsonWithDetails = (jsonData: any): Sale => {
+    if (!jsonData) return null;
+    return {
+      id: jsonData["id"],
+      date: new Date(jsonData["date"]),
+      total: jsonData["total"],
+      store: jsonData["store"],
+      products: jsonData["products"]?.map((product: any) =>
+        Product.fromJson(product)
+      ),
     } as Sale;
   };
 }

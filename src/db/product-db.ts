@@ -40,7 +40,7 @@ export const create = async (
   key?: string,
   saleId?: string,
   storeId?: string
-) => {
+): Promise<DocumentReference<DocumentData>> => {
   const existingProduct = await getRefByCode(product.code);
   const firestoreDB = await getInstanceDB();
   const storeRef = firestoreDB.doc(`${storeDB.COLLECTION}/${storeId}`);
@@ -79,6 +79,8 @@ export const create = async (
 
     await db.insert(COLLECTION, productEntity, key);
   }
+
+  return await getRefByCode(product.code);
 };
 
 export const createMany = async (products: any[], saleId: string) => {
@@ -90,10 +92,28 @@ export const createMany = async (products: any[], saleId: string) => {
   await db.insertMany(COLLECTION, products);
 };
 
+export const addProductsToSale = async (
+  saleId: string,
+  productReferences: DocumentReference[]
+) => {
+  const saleRef = await getSaleRef(saleId);
+  await saleRef.update({ products: productReferences });
+};
+
+export const remove = async (code: string) => {
+  const ref = await getRefByCode(code);
+  if (ref) ref.delete();
+};
+
 async function getSaleRef(saleId: string) {
   const firestoreDB = await db.getInstanceDB();
   const saleRef = firestoreDB.doc(`${saleDB.COLLECTION}/${saleId}`);
   return saleRef;
+}
+
+async function getRef(productId: string) {
+  const firestoreDB = await db.getInstanceDB();
+  return firestoreDB.doc(`${COLLECTION}/${productId}`);
 }
 
 function hasEANCode(product: any): boolean {

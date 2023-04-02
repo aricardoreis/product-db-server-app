@@ -1,3 +1,4 @@
+import { DocumentReference } from "firebase-admin/firestore";
 import { Sale } from "../models";
 import * as db from "./firestore";
 import * as storeDB from "./store-db";
@@ -17,7 +18,20 @@ export const create = async (sale: any, storeId: string, key?: string) => {
 
 export const get = async (id: string) => {
   const sale = await db.fetch(COLLECTION, id);
-  return Sale.fromJson(sale);
+
+  if (sale) {
+    const loadedStore = await db.getDataFromRef(sale.store);
+    sale.store = loadedStore;
+
+    const products = await Promise.all(
+      sale.products.map(
+        async (prodRef: DocumentReference) => await db.getDataFromRef(prodRef)
+      )
+    );
+    sale.products = products;
+  }
+
+  return Sale.fromJsonWithDetails(sale);
 };
 
 export const getAll = async (): Promise<Sale[]> => {
@@ -31,4 +45,13 @@ export const getAll = async (): Promise<Sale[]> => {
       console.error("Something went wrong", e);
     }
   }
+};
+
+export const getRef = async (id: string) => {
+  return await db.getRefByAttributeValue(COLLECTION, "id", id);
+};
+
+export const remove = async (id: string) => {
+  const ref = await getRef(id);
+  if (ref) ref.delete();
 };

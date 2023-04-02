@@ -74,7 +74,7 @@ export const fetch = async (collectionName: string, key?: string) => {
 
   const snapshot = await db.collection(collectionName).get();
   if (key) return snapshot.docs.find((item) => item.id === key)?.data();
-  else return snapshot.docs.map((doc) => doc.data());
+  else return snapshot.docs.map((doc) => ({ ...doc.data(), _id: doc.id }));
 };
 
 export const getRefByAttributeValue = async (

@@ -7,6 +7,10 @@ import { deleteAll } from "./db/firestore";
 import { AppResponse, Sale } from "./models";
 import { ApplicationError } from "./utils/exception";
 import { sortProductsAsc, sortSalesByDate } from "./utils/sorting";
+import { addProductsToSale, remove as removeProduct } from "./db/product-db";
+import { mockSale } from "./utils/constants";
+import { remove as removeSale } from "./db/sale-db";
+import { remove as removeStore } from "./db/store-db";
 
 dotenv.config();
 
@@ -27,6 +31,29 @@ app.get("/delete-all", async (_req: Request, res: Response) => {
   deleteAll("stores");
 
   res.send(AppResponse.create(true, "done"));
+});
+
+app.get("/fakeLoad", async (req, res) => {
+  const data = mockSale;
+
+  // await storeDB.create(data.store, data.store.id);
+  // await saleDB.create(data.sale, data.store.id, data.sale.id);
+  // const productRefs = await Promise.all(
+  //   data.products.map(
+  //     async (element) =>
+  //       await productDB.create(element, null, data.sale.id, data.store.id)
+  //   )
+  // );
+
+  // await addProductsToSale(data.sale.id, productRefs);
+
+  await removeSale(data.sale.id);
+  await removeStore(data.store.id);
+  await Promise.all(
+    data.products.map(async (item) => await removeProduct(item.code))
+  );
+
+  res.send("OK");
 });
 
 app.post("/load", async (req, res: Response) => {
@@ -53,10 +80,15 @@ app.post("/load", async (req, res: Response) => {
 
     await storeDB.create(data.store, data.store.id);
     await saleDB.create(data.sale, data.store.id, data.sale.id);
-    data.products.forEach(
-      async (element) =>
-        await productDB.create(element, null, data.sale.id, data.store.id)
+    const productRefs = await Promise.all(
+      data.products.map(
+        async (element) =>
+          await productDB.create(element, null, data.sale.id, data.store.id)
+      )
     );
+
+    // add product refs to sale
+    await addProductsToSale(data.sale.id, productRefs);
 
     res.send(
       AppResponse.create(
@@ -96,12 +128,11 @@ app.get("/sales/:key", async (req, res: Response) => {
 
   const sale = await saleDB.get(key);
 
-  // TODO: load items list and other additional info
   if (sale) {
     res.status(404);
   }
 
-  res.send(AppResponse.create(true, Sale.fromJson(sale)));
+  res.send(AppResponse.create(true, sale));
 });
 
 app.listen(port, () => {
