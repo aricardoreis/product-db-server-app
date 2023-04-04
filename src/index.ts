@@ -17,7 +17,7 @@ dotenv.config();
 console.log("PORT", process.env.PORT);
 
 const app: Express = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8080;
 
 app.use(express.json());
 
