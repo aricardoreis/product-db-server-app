@@ -125,14 +125,18 @@ app.get("/sales", async (_req, res: Response) => {
 
 app.get("/sales/:key", async (req, res: Response) => {
   const { key } = req.params;
+  try {
+    const sale = await saleDB.get(key);
 
-  const sale = await saleDB.get(key);
+    if (sale) {
+      res.status(404);
+    }
 
-  if (sale) {
-    res.status(404);
+    res.send(AppResponse.create(true, sale));
+  } catch (error) {
+    console.log(`Error when getting sale details for ${key}`);
+    console.error(error);
   }
-
-  res.send(AppResponse.create(true, sale));
 });
 
 app.listen(port, () => {
