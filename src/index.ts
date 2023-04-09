@@ -129,10 +129,10 @@ app.get("/sales/:key", async (req, res: Response) => {
     const sale = await saleDB.get(key);
 
     if (sale) {
-      res.status(404);
+      res.send(AppResponse.create(true, sale));
+    } else {
+      res.sendStatus(404);
     }
-
-    res.send(AppResponse.create(true, sale));
   } catch (error) {
     console.log(`Error when getting sale details for ${key}`);
     console.error(error);
