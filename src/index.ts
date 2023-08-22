@@ -11,6 +11,7 @@ import { addProductsToSale, remove as removeProduct } from "./db/product-db";
 import { mockSale } from "./utils/constants";
 import { remove as removeSale } from "./db/sale-db";
 import { remove as removeStore } from "./db/store-db";
+import cors from "cors";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const app: Express = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
+app.use(cors);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Product DB!");
@@ -124,6 +126,22 @@ app.get("/sales", async (_req, res: Response) => {
 });
 
 app.get("/sales/:key", async (req, res: Response) => {
+  const { key } = req.params;
+  try {
+    const sale = await saleDB.get(key);
+
+    if (sale) {
+      res.send(AppResponse.create(true, sale));
+    } else {
+      res.sendStatus(404);
+    }
+  } catch (error) {
+    console.log(`Error when getting sale details for ${key}`);
+    console.error(error);
+  }
+});
+
+app.delete("/sales/:key", async (req, res: Response) => {
   const { key } = req.params;
   try {
     const sale = await saleDB.get(key);
