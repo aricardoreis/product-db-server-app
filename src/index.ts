@@ -20,8 +20,8 @@ console.log("PORT", process.env.PORT);
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
+app.use(cors());
 app.use(express.json());
-app.use(cors);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Product DB!");
@@ -156,6 +156,7 @@ app.delete("/sales/:key", async (req, res: Response) => {
     console.error(error);
   }
 });
+
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
