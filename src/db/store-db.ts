@@ -7,7 +7,7 @@ export const create = async (store: any, key?: string) => {
 };
 
 export const get = async (key: string) => {
-  await db.fetch(COLLECTION, null, null, key);
+  await db.getByKey(COLLECTION, key);
 };
 
 export const getRef = async (id: string) => {
