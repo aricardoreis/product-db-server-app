@@ -74,8 +74,7 @@ export const insertMany = async (collectionName: string, items: unknown[]) => {
 export const fetch = async (
   collectionName: string,
   orderByAttr?: string,
-  orderByType?: "asc" | "desc",
-  key?: string
+  orderByType?: "asc" | "desc"
 ) => {
   const db = await getInstanceDB();
 
@@ -86,10 +85,19 @@ export const fetch = async (
     snapshot = snapshot.orderBy(orderByAttr, orderByType);
   }
 
-  const query = await snapshot.get();
+  const queryResult = await snapshot.get();
+  return queryResult.docs.map((doc) => ({ ...doc.data(), _id: doc.id }));
+};
 
-  if (key) return query.docs.find((item) => item.id === key)?.data();
-  else return query.docs.map((doc) => ({ ...doc.data(), _id: doc.id }));
+export const getByKey = async (collectionName: string, key: string) => {
+  const db = await getInstanceDB();
+
+  const queryResult = await db
+    .collection(collectionName)
+    .where("id", "==", key)
+    .get();
+
+  return queryResult.docs.length > 0 ? queryResult.docs[0].data() : null;
 };
 
 export const getRefByAttributeValue = async (

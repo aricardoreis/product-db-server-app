@@ -17,7 +17,7 @@ export const create = async (sale: any, storeId: string, key?: string) => {
 };
 
 export const get = async (id: string) => {
-  const sale = await db.fetch(COLLECTION, null, null, id);
+  const sale = await db.getByKey(COLLECTION, id);
 
   if (sale) {
     const loadedStore = await db.getDataFromRef(sale.store);
