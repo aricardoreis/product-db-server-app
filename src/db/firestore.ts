@@ -75,7 +75,7 @@ export const fetch = async (
   collectionName: string,
   orderByAttr?: string,
   orderByType?: "asc" | "desc"
-) => {
+): Promise<any> => {
   const db = await getInstanceDB();
 
   const collection = db.collection(collectionName);
