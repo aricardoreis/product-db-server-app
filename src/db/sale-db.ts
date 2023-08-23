@@ -17,7 +17,7 @@ export const create = async (sale: any, storeId: string, key?: string) => {
 };
 
 export const get = async (id: string) => {
-  const sale = await db.fetch(COLLECTION, id);
+  const sale = await db.fetch(COLLECTION, null, null, id);
 
   if (sale) {
     const loadedStore = await db.getDataFromRef(sale.store);
@@ -36,7 +36,7 @@ export const get = async (id: string) => {
 
 export const getAll = async (): Promise<Sale[]> => {
   try {
-    const items = await db.fetch(COLLECTION);
+    const items = await db.fetch(COLLECTION, "date", "desc");
     console.log("sales count", items.length);
 
     return items.map((item: any) => Sale.fromJson(item));

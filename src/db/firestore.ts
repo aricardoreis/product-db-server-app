@@ -71,12 +71,25 @@ export const insertMany = async (collectionName: string, items: unknown[]) => {
   });
 };
 
-export const fetch = async (collectionName: string, key?: string) => {
+export const fetch = async (
+  collectionName: string,
+  orderByAttr?: string,
+  orderByType?: "asc" | "desc",
+  key?: string
+) => {
   const db = await getInstanceDB();
 
-  const snapshot = await db.collection(collectionName).limit(QUERY_LIMIT).get();
-  if (key) return snapshot.docs.find((item) => item.id === key)?.data();
-  else return snapshot.docs.map((doc) => ({ ...doc.data(), _id: doc.id }));
+  const collection = db.collection(collectionName);
+  let snapshot = collection.limit(QUERY_LIMIT);
+
+  if (orderByAttr) {
+    snapshot = snapshot.orderBy(orderByAttr, orderByType);
+  }
+
+  const query = await snapshot.get();
+
+  if (key) return query.docs.find((item) => item.id === key)?.data();
+  else return query.docs.map((doc) => ({ ...doc.data(), _id: doc.id }));
 };
 
 export const getRefByAttributeValue = async (

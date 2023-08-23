@@ -26,7 +26,7 @@ export const getAll = async (): Promise<Product[]> => {
 };
 
 export const get = async (key: string) => {
-  return Product.fromJson(await db.fetch(COLLECTION, key));
+  return Product.fromJson(await db.fetch(COLLECTION, null, null, key));
 };
 
 export const getRefByCode = async (
