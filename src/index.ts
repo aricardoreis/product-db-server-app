@@ -6,7 +6,7 @@ import { isValidUrl } from "./utils/validator";
 import { deleteAll } from "./db/firestore";
 import { AppResponse, Sale } from "./models";
 import { ApplicationError } from "./utils/exception";
-import { sortProductsAsc, sortSalesByDate } from "./utils/sorting";
+import { sortProductsAsc } from "./utils/sorting";
 import { addProductsToSale, remove as removeProduct } from "./db/product-db";
 import { mockSale } from "./utils/constants";
 import { remove as removeSale } from "./db/sale-db";
@@ -122,7 +122,7 @@ app.get("/products", async (_req: Request, res: Response) => {
 
 app.get("/sales", async (_req, res: Response) => {
   const sales = await saleDB.getAll();
-  res.send(AppResponse.create(true, sales.sort(sortSalesByDate)));
+  res.send(AppResponse.create(true, sales));
 });
 
 app.get("/sales/:key", async (req, res: Response) => {
