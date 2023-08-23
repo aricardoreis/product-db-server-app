@@ -6,6 +6,8 @@ import {
   getFirestore,
 } from "firebase-admin/firestore";
 
+const QUERY_LIMIT = 10;
+
 let dbInstance: FirebaseFirestore.Firestore;
 
 export const getInstanceDB = async () => {
@@ -72,7 +74,7 @@ export const insertMany = async (collectionName: string, items: unknown[]) => {
 export const fetch = async (collectionName: string, key?: string) => {
   const db = await getInstanceDB();
 
-  const snapshot = await db.collection(collectionName).get();
+  const snapshot = await db.collection(collectionName).limit(QUERY_LIMIT).get();
   if (key) return snapshot.docs.find((item) => item.id === key)?.data();
   else return snapshot.docs.map((doc) => ({ ...doc.data(), _id: doc.id }));
 };
