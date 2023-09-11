@@ -58,6 +58,41 @@ app.get("/fakeLoad", async (req, res) => {
   res.send("OK");
 });
 
+app.post("/fetchInvoiceData", async (req, res: Response) => {
+  try {
+    const { url } = req.body;
+
+    console.log("Loading invoice from url " + url);
+
+    if (!url) {
+      throw new ApplicationError("You should provide the invoice url!");
+    }
+
+    if (!isValidUrl(url)) {
+      throw new ApplicationError("Invalid URL!");
+    }
+
+    const scraper = new Scraper(url);
+    const data = await scraper.load();
+
+    res.send(AppResponse.create(true, data));
+  } catch (e) {
+    if (e instanceof Error) {
+      console.log("[ERROR]", e, e.stack);
+    }
+    let statusCode = 500;
+    let message = "Something went wrong";
+
+    if (e instanceof ApplicationError) {
+      statusCode = 400;
+      message = e.message;
+    }
+
+    res.status(statusCode);
+    res.send(AppResponse.create(false, message));
+  }
+});
+
 app.post("/load", async (req, res: Response) => {
   try {
     const { url } = req.body;
@@ -156,7 +191,6 @@ app.delete("/sales/:key", async (req, res: Response) => {
     console.error(error);
   }
 });
-
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
