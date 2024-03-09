@@ -12,6 +12,8 @@ import { mockSale } from "./utils/constants";
 import { remove as removeSale } from "./db/sale-db";
 import { remove as removeStore } from "./db/store-db";
 import cors from "cors";
+import { PSM, createWorker } from "tesseract.js";
+import path from "path";
 
 dotenv.config();
 
@@ -191,6 +193,27 @@ app.delete("/sales/:key", async (req, res: Response) => {
     console.error(error);
   }
 });
+
+app.get("/loadPhotoData", async (req: Request, res: Response) => {
+  const { url } = req.params;
+  const result = await readDataFromPhotos(url);
+  res.send(AppResponse.create(true, result));
+})
+
+const readDataFromPhotos = async (url: string) => {
+  const image = path.resolve(__dirname, '../assets/img02.png');
+  const worker = await createWorker('por');
+  // // await worker.setParameters({
+  // //   tessedit_char_whitelist: '0123456789',
+  // // });
+  // await worker.setParameters({
+  //   tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+  // });
+  const ret = await worker.recognize(image);
+  console.log(`text: ${ret.data.text}`);
+  await worker.terminate();
+  return ret.data.text;
+}
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
