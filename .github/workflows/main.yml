@@ -3,6 +3,7 @@ name: Build and deploy
 on:
   push:
     branches: ["main"]
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 env:
   PM2_PATH: ${{ secrets.PM2_PATH }}
