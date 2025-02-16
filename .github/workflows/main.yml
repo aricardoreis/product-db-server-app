@@ -6,6 +6,9 @@ on:
 
 env:
   PM2_PATH: ${{ secrets.PM2_PATH }}
+  RASPI_HOST: ${{ secrets.RASPI_HOST }}
+  RASPI_USERNAME: ${{ secrets.RASPI_USERNAME }}
+  RASPI_PASSWORD: ${{ secrets.RASPI_PASSWORD }}
 
 jobs:
   bump-version:
@@ -60,20 +63,31 @@ jobs:
       - name: Copy dist files to target host via ssh password
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.RASPI_HOST }}
-          username: ${{ secrets.RASPI_USERNAME }}
-          password: ${{ secrets.RASPI_PASSWORD }}
+          host: ${{ env.RASPI_HOST }}
+          username: ${{ env.RASPI_USERNAME }}
+          password: ${{ env.RASPI_PASSWORD }}
           port: 22
           source: "dist/**"
+          target: "Documents/code/product-db-server-app"
+          overwrite: true
+
+      - name: Copy package.json to target host via ssh password
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ env.RASPI_HOST }}
+          username: ${{ env.RASPI_USERNAME }}
+          password: ${{ env.RASPI_PASSWORD }}
+          port: 22
+          source: "package.json"
           target: "Documents/code/product-db-server-app"
           overwrite: true
 
       - name: Reload application on target host
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.RASPI_HOST }}
-          username: ${{ secrets.RASPI_USERNAME }}
-          password: ${{ secrets.RASPI_PASSWORD }}
+          host: ${{ env.RASPI_HOST }}
+          username: ${{ env.RASPI_USERNAME }}
+          password: ${{ env.RASPI_PASSWORD }}
           port: 22
           script: |
             ${{ env.PM2_PATH }} status
