@@ -1,4 +1,5 @@
 import * as puppeteer from "puppeteer";
+import { ApplicationError } from "../utils/exception";
 
 export class Scraper {
   private static instance: Scraper;
@@ -35,19 +36,23 @@ export class Scraper {
   };
 
   load = async () => {
-    await this.initPage(this.baseUrl);
+    try {
+      await this.initPage(this.baseUrl);
 
-    const store = await this.loadStoreInfo();
-    const sale = await this.loadSaleInfo();
-    const products = await this.loadProductInfo(sale.date);
+      const store = await this.loadStoreInfo();
+      const sale = await this.loadSaleInfo();
+      const products = await this.loadProductInfo(sale.date);
 
-    this.close();
-
-    return {
-      store,
-      sale,
-      products,
-    };
+      return {
+        store,
+        sale,
+        products,
+      };
+    } catch (error) {
+      throw error;
+    } finally {
+      this.close();
+    }
   };
 
   loadSaleInfo = async () => {
@@ -76,8 +81,12 @@ export class Scraper {
   };
 
   loadStoreInfo = async () => {
-    return await this.page.evaluate((sel: string) => {
+    const store = await this.page.evaluate((sel: string) => {
       const topContent = document.querySelector(sel);
+      if (!topContent) {
+        // page content is not valid
+        return null;
+      }
       const values = topContent.querySelectorAll(".text");
       const idTokens = values[0].textContent.split("\n").map((i) => i.trim());
       const store = {
@@ -94,6 +103,10 @@ export class Scraper {
       };
       return store;
     }, "#conteudo > div.txtCenter");
+    if(!store) {
+      throw new ApplicationError("Store not found");
+    }
+    return store;
   };
 
   private async loadProductInfo(date: number) {
