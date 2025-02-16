@@ -1,5 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
+import packageJson from "../package.json";
 import { Scraper } from "./scraper";
 import { productDB, storeDB, saleDB } from "./db";
 import { isValidUrl } from "./utils/validator";
@@ -11,7 +13,6 @@ import { addProductsToSale, remove as removeProduct } from "./db/product-db";
 import { mockSale } from "./utils/constants";
 import { remove as removeSale } from "./db/sale-db";
 import { remove as removeStore } from "./db/store-db";
-import cors from "cors";
 
 dotenv.config();
 
@@ -24,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to Product DB!");
+  res.send(`Welcome to Product DB version ${packageJson.version}!`);
 });
 
 app.get("/delete-all", async (_req: Request, res: Response) => {
