@@ -1,0 +1,83 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  PM2_PATH: ${{ secrets.PM2_PATH }}
+  RASPI_HOST: ${{ secrets.RASPI_HOST }}
+  RASPI_USERNAME: ${{ secrets.RASPI_USERNAME }}
+  RASPI_PASSWORD: ${{ secrets.RASPI_PASSWORD }}
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures full history for versioning
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Auto Increment Version
+        run: |
+          npm version patch -m "chore(release): bump version to %s [skip ci]"
+          git push --follow-tags
+
+  build:
+    needs: bump-version
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm i
+      - run: npm run build
+
+      - name: List files after build
+        run: ls -la dist
+
+      - name: Copy dist files to target host via ssh password
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ env.RASPI_HOST }}
+          username: ${{ env.RASPI_USERNAME }}
+          password: ${{ env.RASPI_PASSWORD }}
+          port: 22
+          source: "dist/**"
+          target: "Documents/code/product-db-server-app"
+          overwrite: true
+
+      - name: Reload application on target host
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.RASPI_HOST }}
+          username: ${{ env.RASPI_USERNAME }}
+          password: ${{ env.RASPI_PASSWORD }}
+          port: 22
+          script: |
+            ${{ env.PM2_PATH }} status
+            ${{ env.PM2_PATH }} reload product-db
