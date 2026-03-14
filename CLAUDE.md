@@ -15,11 +15,6 @@ npm start         # Install deps, build, and run (production)
 | Variable | Description |
 |---|---|
 | `PORT` | Server port (default: 8080) |
-| `FIREBASE_PROJECT_ID` | Firebase project ID (legacy — Firestore persistence) |
-| `FIREBASE_PRIVATE_KEY` | Firebase private key (legacy) |
-| `FIREBASE_CLIENT_EMAIL` | Firebase client email (legacy) |
-
-> **Note**: The Firestore/Firebase integration is legacy code. The primary consumer of this service is the `product-db` backend, which calls `POST /fetchInvoiceData` and handles persistence itself via PostgreSQL/Supabase.
 
 ## API Endpoints
 
@@ -27,10 +22,6 @@ npm start         # Install deps, build, and run (production)
 |---|---|---|
 | `GET /` | Health check — returns version from package.json |
 | `POST /fetchInvoiceData` | **Main endpoint** — receives `{ url }`, scrapes NF-e HTML, returns structured data |
-| `POST /load` | Legacy — scrapes + persists to Firestore |
-| `GET /products` | Legacy — list products from Firestore |
-| `GET /sales` | Legacy — list sales from Firestore |
-| `GET /sales/:key` | Legacy — get sale details from Firestore |
 
 ## How Scraping Works
 
@@ -53,19 +44,12 @@ Returns: `{ store, sale, products[] }`
 
 ```
 src/
-├── index.ts              # Express server, endpoint definitions
+├── index.ts              # Express server with /fetchInvoiceData endpoint
 ├── scraper/index.ts      # Puppeteer scraper (core logic)
-├── models/models.ts      # Data models: Product, Sale, Store, PriceHistory, AppResponse
-├── db/                   # Legacy Firestore persistence layer
-│   ├── firestore.ts      #   Firebase Admin SDK init + generic CRUD
-│   ├── product-db.ts     #   Product collection operations (EAN upsert logic)
-│   ├── sale-db.ts        #   Sale collection operations
-│   └── store-db.ts       #   Store collection operations
+├── models/models.ts      # AppResponse wrapper
 └── utils/
-    ├── constants.ts      # Mock data for testing
     ├── exception.ts      # ApplicationError class
-    ├── validator.ts      # URL validation
-    └── sorting.ts        # Alphabetical product sorting
+    └── validator.ts      # URL validation
 ```
 
 ## Deployment

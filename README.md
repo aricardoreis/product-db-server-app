@@ -9,7 +9,6 @@ Part of the [Product-DB](../README.md) ecosystem.
 - **Express** — HTTP server
 - **Puppeteer** — Headless Chrome for HTML scraping
 - **TypeScript**
-- **Firebase/Firestore** — Legacy persistence (no longer the primary data store)
 
 ## Getting Started
 
