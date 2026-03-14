@@ -3,6 +3,11 @@ name: Build and deploy
 on:
   push:
     branches: ["main"]
+    paths:
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
   workflow_dispatch: # Allows manual triggering of the workflow
 
 env:
