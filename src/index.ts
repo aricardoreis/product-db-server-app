@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
 import cors from "cors";
+import pinoHttp from "pino-http";
 import packageJson from "../package.json";
 import { Scraper } from "./scraper";
 import { productDB, storeDB, saleDB } from "./db";
@@ -13,16 +13,33 @@ import { addProductsToSale, remove as removeProduct } from "./db/product-db";
 import { mockSale } from "./utils/constants";
 import { remove as removeSale } from "./db/sale-db";
 import { remove as removeStore } from "./db/store-db";
+import { logger } from "./logger";
 
-dotenv.config();
-
-console.log("PORT", process.env.PORT);
+logger.info({ port: process.env.PORT }, "PORT");
 
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req(req) {
+        const { authorization, cookie, ...safeHeaders } =
+          req.raw?.headers || {};
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.url,
+          query: req.query,
+          headers: safeHeaders,
+        };
+      },
+    },
+  })
+);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Welcome to Product DB version ${packageJson.version}!`);
@@ -63,7 +80,7 @@ app.post("/fetchInvoiceData", async (req, res: Response) => {
   try {
     const { url } = req.body;
 
-    console.log("Loading invoice from url " + url);
+    logger.info({ url }, "Loading invoice from url");
 
     if (!url) {
       throw new ApplicationError("You should provide the invoice url!");
@@ -79,7 +96,7 @@ app.post("/fetchInvoiceData", async (req, res: Response) => {
     res.send(AppResponse.create(true, data));
   } catch (e) {
     if (e instanceof Error) {
-      console.log("[ERROR]", e, e.stack);
+      logger.error({ err: e }, "Error in fetchInvoiceData");
     }
     let statusCode = 500;
     let message = "Something went wrong";
@@ -98,7 +115,7 @@ app.post("/load", async (req, res: Response) => {
   try {
     const { url } = req.body;
 
-    console.log("Loading invoice from url " + url);
+    logger.info({ url }, "Loading invoice from url");
 
     if (!url) {
       throw new ApplicationError("You should provide the invoice url!");
@@ -136,7 +153,7 @@ app.post("/load", async (req, res: Response) => {
     );
   } catch (e) {
     if (e instanceof Error) {
-      console.log("[ERROR]", e, e.stack);
+      logger.error({ err: e }, "Error in load");
     }
     let statusCode = 500;
     let message = "Something went wrong";
@@ -172,8 +189,7 @@ app.get("/sales/:key", async (req, res: Response) => {
       res.sendStatus(404);
     }
   } catch (error) {
-    console.log(`Error when getting sale details for ${key}`);
-    console.error(error);
+    logger.error({ err: error, key }, "Error when getting sale details");
   }
 });
 
@@ -188,11 +204,10 @@ app.delete("/sales/:key", async (req, res: Response) => {
       res.sendStatus(404);
     }
   } catch (error) {
-    console.log(`Error when getting sale details for ${key}`);
-    console.error(error);
+    logger.error({ err: error, key }, "Error when getting sale details");
   }
 });
 
 app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+  logger.info({ port }, "Server is running");
 });

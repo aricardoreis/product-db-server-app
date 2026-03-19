@@ -2,6 +2,7 @@ import { DocumentReference } from "firebase-admin/firestore";
 import { Sale } from "../models";
 import * as db from "./firestore";
 import * as storeDB from "./store-db";
+import { logger } from "../logger";
 
 export const COLLECTION = "sales";
 
@@ -37,12 +38,12 @@ export const get = async (id: string) => {
 export const getAll = async (): Promise<Sale[]> => {
   try {
     const items = await db.fetch(COLLECTION, "date", "desc");
-    console.log("sales count", items.length);
+    logger.info({ count: items.length }, "Sales fetched");
 
     return items.map((item: any) => Sale.fromJson(item));
   } catch (e) {
     if (e instanceof Error) {
-      console.error("Something went wrong", e);
+      logger.error({ err: e }, "Error fetching sales");
     }
   }
 };

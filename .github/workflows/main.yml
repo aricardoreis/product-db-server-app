@@ -29,7 +29,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Configure Git
@@ -48,7 +48,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [22.x]
 
     steps:
       - name: Checkout Repository
@@ -77,18 +77,18 @@ jobs:
           target: "Documents/code/product-db-server-app"
           overwrite: true
 
-      - name: Copy package.json to target host via ssh password
+      - name: Copy package.json and package-lock.json to target host via ssh password
         uses: appleboy/scp-action@master
         with:
           host: ${{ env.RASPI_HOST }}
           username: ${{ env.RASPI_USERNAME }}
           password: ${{ env.RASPI_PASSWORD }}
           port: 22
-          source: "package.json"
+          source: "package.json,package-lock.json"
           target: "Documents/code/product-db-server-app"
           overwrite: true
 
-      - name: Reload application on target host
+      - name: Install dependencies and reload application on target host
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.RASPI_HOST }}
@@ -96,5 +96,9 @@ jobs:
           password: ${{ env.RASPI_PASSWORD }}
           port: 22
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            cd Documents/code/product-db-server-app
+            npm ci --omit=dev
             ${{ env.PM2_PATH }} status
             ${{ env.PM2_PATH }} reload product-db

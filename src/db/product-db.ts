@@ -9,18 +9,19 @@ import { getInstanceDB } from "./firestore";
 import * as db from "./firestore";
 import * as saleDB from "./sale-db";
 import * as storeDB from "./store-db";
+import { logger } from "../logger";
 
 const COLLECTION = "products";
 
 export const getAll = async (): Promise<Product[]> => {
   try {
     const items = await db.fetch(COLLECTION);
-    console.log("items count", items.length);
+    logger.info({ count: items.length }, "Products fetched");
 
     return items.map((item: any) => Product.fromJson(item));
   } catch (e) {
     if (e instanceof Error) {
-      console.error("Something went wrong", e);
+      logger.error({ err: e }, "Error fetching products");
     }
   }
 };
