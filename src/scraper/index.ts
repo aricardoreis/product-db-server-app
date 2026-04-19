@@ -5,11 +5,13 @@ export class Scraper {
   private static instance: Scraper;
 
   protected baseUrl: string;
+  protected htmlContent: string;
   private browser: puppeteer.Browser;
   protected page: puppeteer.Page;
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
+  constructor({ url, html }: { url?: string; html?: string }) {
+    this.baseUrl = url;
+    this.htmlContent = html;
   }
 
   launchBrowser = async () => {
@@ -35,9 +37,19 @@ export class Scraper {
     await this.page.goto(url);
   };
 
+  initPageFromHtml = async (html: string) => {
+    await this.launchBrowser();
+    this.page = await this.browser.newPage();
+    await this.page.setContent(html, { waitUntil: "domcontentloaded" });
+  };
+
   load = async () => {
     try {
-      await this.initPage(this.baseUrl);
+      if (this.htmlContent) {
+        await this.initPageFromHtml(this.htmlContent);
+      } else {
+        await this.initPage(this.baseUrl);
+      }
 
       const store = await this.loadStoreInfo();
       const sale = await this.loadSaleInfo();
@@ -104,7 +116,7 @@ export class Scraper {
       return store;
     }, "#conteudo > div.txtCenter");
     if(!store) {
-      throw new ApplicationError("Store not found");
+      throw new ApplicationError("Invoice data could not be extracted from the provided page");
     }
     return store;
   };
