@@ -21,7 +21,7 @@ const app: Express = express();
 const port = process.env.PORT || 8080;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 app.use(
   pinoHttp({
     logger,
@@ -78,19 +78,25 @@ app.get("/fakeLoad", async (req, res) => {
 
 app.post("/fetchInvoiceData", async (req, res: Response) => {
   try {
-    const { url } = req.body;
+    const { url, html } = req.body;
 
-    logger.info({ url }, "Loading invoice from url");
-
-    if (!url) {
-      throw new ApplicationError("You should provide the invoice url!");
+    if (!url && !html) {
+      throw new ApplicationError(
+        "You should provide the invoice url or html content!"
+      );
     }
 
-    if (!isValidUrl(url)) {
-      throw new ApplicationError("Invalid URL!");
+    if (url) {
+      logger.info({ url }, "Loading invoice from url");
+
+      if (!isValidUrl(url)) {
+        throw new ApplicationError("Invalid URL!");
+      }
+    } else {
+      logger.info("Loading invoice from html content");
     }
 
-    const scraper = new Scraper(url);
+    const scraper = new Scraper({ url, html });
     const data = await scraper.load();
 
     res.send(AppResponse.create(true, data));
@@ -125,7 +131,7 @@ app.post("/load", async (req, res: Response) => {
       throw new ApplicationError("Invalid URL!");
     }
 
-    const scraper = new Scraper(url);
+    const scraper = new Scraper({ url });
     const data = await scraper.load();
 
     const sale = await saleDB.get(data.sale.id);
